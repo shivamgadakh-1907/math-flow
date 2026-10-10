@@ -33,9 +33,9 @@ function createGraphFunction(
     parametric: parsed.parametric,
     polar: parsed.polar,
     visible: true,
-    animationProgress: 1,
-    animationSpeed: 1,
-    isAnimating: false,
+    animationProgress: 0,
+    animationSpeed: 0.75,
+    isAnimating: true,
     domain,
     autoDomain: { ...domain },
     showDerivative: false,
@@ -96,7 +96,9 @@ export function useAppState() {
           
           if (newProgress !== fn.animationProgress) {
             changed = true;
-            return { ...fn, animationProgress: newProgress };
+            // Auto-stop animation when progress reaches 1
+            const done = newProgress >= 1;
+            return { ...fn, animationProgress: newProgress, isAnimating: done ? false : fn.isAnimating };
           }
           return fn;
         });

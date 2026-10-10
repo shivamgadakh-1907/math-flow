@@ -24,7 +24,7 @@ interface FunctionManagerProps {
   resetView: () => void;
 }
 
-const SPEED_PRESETS = [0.1, 0.25, 0.5, 1, 2, 4, 8];
+const SPEED_PRESETS = [0.1, 0.25, 0.5, 0.75, 1, 2, 4, 8];
 
 export default function FunctionManager({
   functions, selectedFuncId, setSelectedFuncId,

@@ -678,7 +678,7 @@ function drawFunction(
   for (let i = 0; i <= numPoints; i++) {
     const x = from + i * step;
 
-    if (animationMode === 'draw' && x > drawEnd && progress < 1) break;
+    if (progress < 1 && x > drawEnd) break;
 
     const y = fn.hasTime
       ? evaluateFunction(fn.compiled, x, globalTime)
@@ -740,7 +740,7 @@ function drawParametricFunction(
   const numPoints = Math.min(2500, Math.max(800, Math.floor(size.w * 2.5)));
   const step = (tTo - tFrom) / numPoints;
   const progress = fn.animationProgress;
-  const maxT = animationMode === 'draw' && progress < 1 ? tFrom + (tTo - tFrom) * progress : tTo;
+  const maxT = progress < 1 ? tFrom + (tTo - tFrom) * progress : tTo;
 
   ctx.strokeStyle = fn.color;
   ctx.lineWidth = 2.2;
@@ -788,7 +788,7 @@ function drawParametricFunction(
   if (drawing) ctx.stroke();
 
   // Tracer point
-  if ((animationMode === 'trace' || (animationMode === 'draw' && progress < 1)) && fn.isAnimating) {
+  if ((animationMode === 'trace' || progress < 1) && fn.isAnimating) {
     const currentT = tFrom + (tTo - tFrom) * progress;
     const pt = evaluateParametric(fn.parametric.compiledX, fn.parametric.compiledY, currentT, globalTime);
     if (pt.valid) {
@@ -820,7 +820,7 @@ function drawPolarFunction(
   const numPoints = Math.min(2500, Math.max(800, Math.floor(size.w * 2.5)));
   const step = (thetaTo - thetaFrom) / numPoints;
   const progress = fn.animationProgress;
-  const maxTheta = animationMode === 'draw' && progress < 1 ? thetaFrom + (thetaTo - thetaFrom) * progress : thetaTo;
+  const maxTheta = progress < 1 ? thetaFrom + (thetaTo - thetaFrom) * progress : thetaTo;
 
   ctx.strokeStyle = fn.color;
   ctx.lineWidth = 2.2;
@@ -870,7 +870,7 @@ function drawPolarFunction(
   if (drawing) ctx.stroke();
 
   // Tracer point
-  if ((animationMode === 'trace' || (animationMode === 'draw' && progress < 1)) && fn.isAnimating) {
+  if ((animationMode === 'trace' || progress < 1) && fn.isAnimating) {
     const currentTheta = thetaFrom + (thetaTo - thetaFrom) * progress;
     const r = evaluatePolar(fn.polar.compiledR, currentTheta, globalTime);
     if (!isNaN(r) && isFinite(r)) {
@@ -941,7 +941,7 @@ function drawImplicitFunction(
   }
 
   const progress = fn.animationProgress;
-  const isAnimating = fn.isAnimating && progress < 1;
+  const isPartiallyDrawn = progress < 1;
   const thresholdX = xMin + (xMax - xMin) * progress;
 
   ctx.save();
@@ -957,7 +957,7 @@ function drawImplicitFunction(
   let maxDrawnX = -Infinity;
 
   for (const seg of segments) {
-    if (animationMode === 'draw' && isAnimating) {
+    if (isPartiallyDrawn) {
       if (seg.x1 > thresholdX && seg.x2 > thresholdX) continue;
       if (seg.x1 > thresholdX || seg.x2 > thresholdX) {
         const segMax = Math.max(seg.x1, seg.x2);
@@ -976,12 +976,16 @@ function drawImplicitFunction(
   ctx.stroke();
   ctx.restore();
 
-  if (isAnimating && tracerPoint) {
+  if (isPartiallyDrawn && fn.isAnimating && tracerPoint) {
     const sp = worldToScreen(tracerPoint.x, tracerPoint.y);
+    ctx.save();
     ctx.fillStyle = fn.color;
+    ctx.shadowColor = fn.color;
+    ctx.shadowBlur = 10;
     ctx.beginPath();
     ctx.arc(sp.x, sp.y, 4.5, 0, Math.PI * 2);
     ctx.fill();
+    ctx.restore();
   }
 }
 
